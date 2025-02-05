@@ -13,7 +13,7 @@ int part(int A[size], int p, int r) {
     int x = A[p];
     int i = p;
     for(int j = p+1; j < r+1; j++) {
-        if (A[j] <= x) {
+        if (A[j] >= x) {
             i += 1;
             swap (&A[i], &A[j]);
         }
