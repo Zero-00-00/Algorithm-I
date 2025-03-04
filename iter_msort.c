@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <limits.h>
 #define size 15
 
 int A[size];
@@ -17,7 +18,7 @@ int merge(int A[size], int p, int q, int r) {
     for (int j=0; j<n2; j++){
         R[j] = A[q + j + 1];
     }
-    L[n1]=999999, R[n2]=999999;
+    L[n1]=INT_MAX, R[n2]=INT_MAX;
 
     int i = 0, j = 0;
     for(int k=p; k<=r; k++) {
