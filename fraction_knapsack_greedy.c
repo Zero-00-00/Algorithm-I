@@ -1,5 +1,4 @@
 #include <stdio.h>
-#define size
 
 //quick sort
 void swap(int *a, int *b) {
@@ -8,7 +7,7 @@ void swap(int *a, int *b) {
     *b = temp;
 }
 
-int part(int A[size], int b[size], int c[size], int p, int r) {     //adept at swapping all the matrices based on ratio
+int part(int A[], int b[], int c[], int p, int r) {     //adept at swapping all the matrices based on ratio
     int x = A[p];
     int i = p;
     for(int j = p+1; j < r+1; j++) {
@@ -25,7 +24,7 @@ int part(int A[size], int b[size], int c[size], int p, int r) {     //adept at s
     return i;
 }
 
-void qsort(int A[size], int b[size], int c[size], int p, int r) {
+void qsort(int A[], int b[], int c[], int p, int r) {
     int q;
     if (p < r) {
         q = part(A, b, c, p, r);
@@ -35,7 +34,7 @@ void qsort(int A[size], int b[size], int c[size], int p, int r) {
 }
 
 // Greedy Algorithm
-int greedy(int w[size], int p[size], int ratio[size], float x[size], int W, int n) {
+int greedy(int w[], int p[], int ratio[], float x[], int W, int n) {
     for (int i=0; i<n; i++) {       //initialize the x[i] matrix with zero
         x[i]=0;
     }
