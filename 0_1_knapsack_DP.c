@@ -104,7 +104,7 @@ int main() {
    int j = W;
    for (int i = n; i > 0; i--) {
        if (c[i][j] != c[i - 1][j]) { // This item is included
-           printf("Item %d\n", i);
+           printf("Item with weight %d\n", w[i - 1]);
            j -= w[i - 1]; // Reduce the weight of the remaining knapsack
        }
    }
