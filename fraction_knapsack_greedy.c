@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-//quick sort
+//quick sort (decending)
 void swap(int *a, int *b) {
     int temp = *a;
     *a = *b;
