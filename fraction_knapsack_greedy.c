@@ -1,8 +1,5 @@
 #include <stdio.h>
-#define size 15
-
-int p[size], w[size], ratio[size];
-float x[size];
+#define size
 
 //quick sort
 void swap(int *a, int *b) {
@@ -75,6 +72,9 @@ int main() {
     scanf("%d", &n);
     printf("Enter the weight of the Knapsack: ");
     scanf("%d", &W);
+    
+    int p[n], w[n], ratio[n];
+    float x[n];
 
     printf ("Enter the profits and weights of each item in shop...\n");
     for (int i=0; i<n; i++) {
