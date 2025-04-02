@@ -1,41 +1,84 @@
 #include <stdio.h>
-#define size 2  // Matrix size (must be a power of 2)
+#include <stdlib.h>
+#include <math.h>
 
-int A[size][size], B[size][size], C[size][size];
+// Function to find the next power of 2 (for padding)
+int nextPowerOf2(int n) {
+    int power = 1;
+    while (power < n) {
+        power *= 2;
+    }
+    return power;
+}
+
+// Function to allocate memory for a matrix
+int** allocateMatrix(int size) {
+    int** matrix = (int**)malloc(size * sizeof(int*));
+    for (int i = 0; i < size; i++) {
+        matrix[i] = (int*)calloc(size, sizeof(int)); // Initialize to 0
+    }
+    return matrix;
+}
+
+// Function to free dynamically allocated matrix
+void freeMatrix(int** matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
 
 // Function to add two matrices
-void add(int A[size][size], int B[size][size], int C[size][size], int split) {
-    for (int i = 0; i < split; i++) {
-        for (int j = 0; j < split; j++) {
+void add(int** A, int** B, int** C, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             C[i][j] = A[i][j] + B[i][j];
         }
     }
 }
 
 // Function to subtract two matrices
-void subtract(int A[size][size], int B[size][size], int C[size][size], int split) {
-    for (int i = 0; i < split; i++) {
-        for (int j = 0; j < split; j++) {
+void subtract(int** A, int** B, int** C, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             C[i][j] = A[i][j] - B[i][j];
         }
     }
 }
 
 // Strassen's Algorithm
-void strassen(int A[size][size], int B[size][size], int C[size][size], int split) {
-    if (split == 1) {
+void strassen(int** A, int** B, int** C, int size) {
+    if (size == 1) {
         C[0][0] = A[0][0] * B[0][0];
         return;
     }
 
-    int newSize = split / 2;
-    int A11[newSize][newSize], A12[newSize][newSize], A21[newSize][newSize], A22[newSize][newSize];
-    int B11[newSize][newSize], B12[newSize][newSize], B21[newSize][newSize], B22[newSize][newSize];
-    int P1[newSize][newSize], P2[newSize][newSize], P3[newSize][newSize], P4[newSize][newSize];
-    int P5[newSize][newSize], P6[newSize][newSize], P7[newSize][newSize];
-    int temp1[newSize][newSize], temp2[newSize][newSize];
+    int newSize = size / 2;
 
-    // Dividing matrices into sub-matrices
+    // Allocate memory for submatrices
+    int** A11 = allocateMatrix(newSize);
+    int** A12 = allocateMatrix(newSize);
+    int** A21 = allocateMatrix(newSize);
+    int** A22 = allocateMatrix(newSize);
+    int** B11 = allocateMatrix(newSize);
+    int** B12 = allocateMatrix(newSize);
+    int** B21 = allocateMatrix(newSize);
+    int** B22 = allocateMatrix(newSize);
+    int** C11 = allocateMatrix(newSize);
+    int** C12 = allocateMatrix(newSize);
+    int** C21 = allocateMatrix(newSize);
+    int** C22 = allocateMatrix(newSize);
+    int** P1 = allocateMatrix(newSize);
+    int** P2 = allocateMatrix(newSize);
+    int** P3 = allocateMatrix(newSize);
+    int** P4 = allocateMatrix(newSize);
+    int** P5 = allocateMatrix(newSize);
+    int** P6 = allocateMatrix(newSize);
+    int** P7 = allocateMatrix(newSize);
+    int** temp1 = allocateMatrix(newSize);
+    int** temp2 = allocateMatrix(newSize);
+
+    // Divide A and B into submatrices
     for (int i = 0; i < newSize; i++) {
         for (int j = 0; j < newSize; j++) {
             A11[i][j] = A[i][j];
@@ -50,100 +93,106 @@ void strassen(int A[size][size], int B[size][size], int C[size][size], int split
         }
     }
 
-    // P1 = (A11 + A22) * (B11 + B22)
+    // Compute the 7 Strassen products
     add(A11, A22, temp1, newSize);
     add(B11, B22, temp2, newSize);
     strassen(temp1, temp2, P1, newSize);
 
-    // P2 = (A21 + A22) * B11
     add(A21, A22, temp1, newSize);
     strassen(temp1, B11, P2, newSize);
 
-    // P3 = A11 * (B12 - B22)
     subtract(B12, B22, temp1, newSize);
     strassen(A11, temp1, P3, newSize);
 
-    // P4 = A22 * (B21 - B11)
     subtract(B21, B11, temp1, newSize);
     strassen(A22, temp1, P4, newSize);
 
-    // P5 = (A11 + A12) * B22
     add(A11, A12, temp1, newSize);
     strassen(temp1, B22, P5, newSize);
 
-    // P6 = (A21 - A11) * (B11 + B12)
     subtract(A21, A11, temp1, newSize);
     add(B11, B12, temp2, newSize);
     strassen(temp1, temp2, P6, newSize);
 
-    // P7 = (A12 - A22) * (B21 + B22)
     subtract(A12, A22, temp1, newSize);
     add(B21, B22, temp2, newSize);
     strassen(temp1, temp2, P7, newSize);
 
-    // Combining results into matrix C
+    // Compute final submatrices of C
     for (int i = 0; i < newSize; i++) {
         for (int j = 0; j < newSize; j++) {
-            C[i][j] = P1[i][j] + P4[i][j] - P5[i][j] + P7[i][j];  // C11
-            C[i][j + newSize] = P3[i][j] + P5[i][j];              // C12
-            C[i + newSize][j] = P2[i][j] + P4[i][j];              // C21
-            C[i + newSize][j + newSize] = P1[i][j] - P2[i][j] + P3[i][j] + P6[i][j];  // C22
+            C11[i][j] = P1[i][j] + P4[i][j] - P5[i][j] + P7[i][j];
+            C12[i][j] = P3[i][j] + P5[i][j];
+            C21[i][j] = P2[i][j] + P4[i][j];
+            C22[i][j] = P1[i][j] - P2[i][j] + P3[i][j] + P6[i][j];
         }
     }
+
+    // Merge C11, C12, C21, C22 into C
+    for (int i = 0; i < newSize; i++) {
+        for (int j = 0; j < newSize; j++) {
+            C[i][j] = C11[i][j];
+            C[i][j + newSize] = C12[i][j];
+            C[i + newSize][j] = C21[i][j];
+            C[i + newSize][j + newSize] = C22[i][j];
+        }
+    }
+
+    // Free allocated memory
+    freeMatrix(A11, newSize); freeMatrix(A12, newSize);
+    freeMatrix(A21, newSize); freeMatrix(A22, newSize);
+    freeMatrix(B11, newSize); freeMatrix(B12, newSize);
+    freeMatrix(B21, newSize); freeMatrix(B22, newSize);
+    freeMatrix(C11, newSize); freeMatrix(C12, newSize);
+    freeMatrix(C21, newSize); freeMatrix(C22, newSize);
+    freeMatrix(P1, newSize); freeMatrix(P2, newSize);
+    freeMatrix(P3, newSize); freeMatrix(P4, newSize);
+    freeMatrix(P5, newSize); freeMatrix(P6, newSize);
+    freeMatrix(P7, newSize); freeMatrix(temp1, newSize);
+    freeMatrix(temp2, newSize);
 }
 
-// Function to display the matrix
-void display(int matrix[size][size], int p, int s) {
-    for (int i = 0; i < p; i++) {
-        for (int j = 0; j < s; j++) {
-            printf("%d ", matrix[i][j]);
+// Function to print a matrix
+void printMatrix(int** matrix, int rows, int cols) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            printf("%4d ", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
 int main() {
-    // Initialize with Zero
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            A[i][j] = 0;
-            B[i][j] = 0;
-            C[i][j] = 0;
-        }
-    }
-
-    // Take the Dimentions of the matrices from user
     int p, q, r, s;
-    printf("Enter the dimensions of the Matrices: ");
+    printf("Enter matrix dimensions (p q r s): ");
     scanf("%d %d %d %d", &p, &q, &r, &s);
 
-    if (q != r || p < 1 || q < 1 || r < 1 || s < 1) {
-        printf("The Dimensions of the matrices are not legal!!");
+    if (q != r) {
+        printf("Matrix multiplication not possible.\n");
         return 0;
     }
 
+    int newSize = nextPowerOf2((p > s) ? p : s);
+
+    int** A = allocateMatrix(newSize);
+    int** B = allocateMatrix(newSize);
+    int** C = allocateMatrix(newSize);
+
     printf("Enter elements of Matrix A:\n");
-    for (int i = 0; i < p; i++) {
-        for (int j = 0; j < q; j++) {
+    for (int i = 0; i < p; i++)
+        for (int j = 0; j < q; j++)
             scanf("%d", &A[i][j]);
-        }
-    }
 
     printf("Enter elements of Matrix B:\n");
-    for (int i = 0; i < r; i++) {
-        for (int j = 0; j < s; j++) {
+    for (int i = 0; i < r; i++)
+        for (int j = 0; j < s; j++)
             scanf("%d", &B[i][j]);
-        }
-    }
 
-    // Perform Strassen multiplication
-    strassen(A, B, C, size);
+    strassen(A, B, C, newSize);
 
-    // display(A, p, q);
-    // display(B, r, s);
+    printf("\nResultant Matrix:\n");
+    printMatrix(C, p, s);
 
-    printf("\nResultant Matrix C (A x B):\n");
-    display(C, p, s);
-
+    freeMatrix(A, newSize); freeMatrix(B, newSize); freeMatrix(C, newSize);
     return 0;
 }
